@@ -2,9 +2,7 @@
 
 import { createTask } from "@/lib/tasks/client";
 import type { Task } from "@/lib/tasks/types";
-import { checkTitle, isDueDate, type TITLE_REQUIRED, type TITLE_TOO_LONG } from "@/lib/tasks/validate";
-
-export const SAVE_FAILED = "The task could not be saved. Please try again.";
+import { SAVE_FAILED, checkTitle, isDueDate, type TITLE_REQUIRED, type TITLE_TOO_LONG } from "@/lib/tasks/validate";
 
 export type CreateTaskState =
   | { status: "created"; task: Task }
