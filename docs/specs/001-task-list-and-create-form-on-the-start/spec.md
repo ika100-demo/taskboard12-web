@@ -1,7 +1,7 @@
 ---
 spec_id: 001-task-list-and-create-form-on-the-start
 title: Task list and create form on the start page, backed by the Task API
-status: approved
+status: building
 priority: P1
 shape: web-nextjs
 parent: ika100-demo/taskboard12-gitops:001-persist-tasks-in-postgres-and-manage
@@ -106,3 +106,4 @@ Tests mock the Task API per the plan's Contract.
 
 - 2026-11-13 created from the system plan, with its criteria (spec 147)
 - 2026-11-13 approved
+- 2026-11-13 building
