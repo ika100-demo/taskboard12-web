@@ -37,6 +37,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   delete process.env.TASKBOARD12_API_URL;
 });
@@ -45,6 +46,8 @@ async function renderPage() {
   render(await HomePage());
   return screen.getByRole("region", { name: "Tasks" });
 }
+
+const tasksRegion = () => screen.getByRole("region", { name: "Tasks" });
 
 function fillAndSubmit(title: string, due?: string) {
   const form = screen.getByRole("form", { name: "New task" });
@@ -76,6 +79,7 @@ describe("task list (page)", () => {
   });
 
   it("AC-001.6 shows the load error when the API times out", async () => {
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
     const fn = stubFetch(() => {
       throw timeoutError();
     });
@@ -83,6 +87,8 @@ describe("task list (page)", () => {
     expect(within(region).getByText(LOAD_FAILED)).toBeInTheDocument();
     expect(within(region).queryByRole("list", { name: "Task list" })).not.toBeInTheDocument();
     expect(fn.mock.calls[0][1]?.signal).toBeTruthy();
+    expect(timeoutSpy).toHaveBeenCalledWith(5000);
+    timeoutSpy.mockRestore();
   });
 
   it("AC-001.6 shows the load error when the API is unreachable", async () => {
@@ -140,7 +146,7 @@ describe("create form", () => {
       const fn = stubFetch(() => json(201, task("9", "x")));
       render(<TaskBoard initial={{ ok: true, tasks: [task("1", "First")] }} />);
       const form = fillAndSubmit(value, "2026-05-01");
-      expect(await within(form).findByText("Title is required")).toBeInTheDocument();
+      expect(await within(tasksRegion()).findByText("Title is required")).toBeInTheDocument();
       expect(posts(fn)).toHaveLength(0);
       expect(within(form).getByLabelText("Title")).toHaveValue(value);
       expect(within(form).getByLabelText("Due date (optional)")).toHaveValue("2026-05-01");
@@ -153,7 +159,7 @@ describe("create form", () => {
     render(<TaskBoard initial={{ ok: true, tasks: [] }} />);
     const long = "a".repeat(201);
     const form = fillAndSubmit(`  ${long}  `);
-    expect(await within(form).findByText("Title must be at most 200 characters")).toBeInTheDocument();
+    expect(await within(tasksRegion()).findByText("Title must be at most 200 characters")).toBeInTheDocument();
     expect(posts(fn)).toHaveLength(0);
     expect(within(form).getByLabelText("Title")).toHaveValue(`  ${long}  `);
   });
@@ -177,13 +183,16 @@ describe("create form", () => {
   });
 
   it("AC-001.7 keeps input and list and shows the save error when the API times out", async () => {
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
     const fn = stubFetch(() => {
       throw timeoutError();
     });
     render(<TaskBoard initial={{ ok: true, tasks: [task("1", "First")] }} />);
     const form = fillAndSubmit("Keep me", "2026-06-01");
-    expect(await within(form).findByText(SAVE_FAILED)).toBeInTheDocument();
+    expect(await within(tasksRegion()).findByText(SAVE_FAILED)).toBeInTheDocument();
     expect(fn.mock.calls[0][1]?.signal).toBeTruthy();
+    expect(timeoutSpy).toHaveBeenCalledWith(5000);
+    timeoutSpy.mockRestore();
     expect(within(form).getByLabelText("Title")).toHaveValue("Keep me");
     expect(within(form).getByLabelText("Due date (optional)")).toHaveValue("2026-06-01");
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
@@ -195,7 +204,7 @@ describe("create form", () => {
     });
     render(<TaskBoard initial={{ ok: true, tasks: [] }} />);
     const form = fillAndSubmit("Keep me");
-    expect(await within(form).findByText(SAVE_FAILED)).toBeInTheDocument();
+    expect(await within(tasksRegion()).findByText(SAVE_FAILED)).toBeInTheDocument();
     expect(within(form).getByLabelText("Title")).toHaveValue("Keep me");
   });
 
@@ -203,7 +212,7 @@ describe("create form", () => {
     stubFetch(() => json(status, task("9", "Keep me")));
     render(<TaskBoard initial={{ ok: true, tasks: [task("1", "First")] }} />);
     const form = fillAndSubmit("Keep me", "2026-06-01");
-    expect(await within(form).findByText(SAVE_FAILED)).toBeInTheDocument();
+    expect(await within(tasksRegion()).findByText(SAVE_FAILED)).toBeInTheDocument();
     expect(within(form).getByLabelText("Title")).toHaveValue("Keep me");
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
   });
