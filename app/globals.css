@@ -398,6 +398,75 @@ main {
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
 }
 
+/* ---------- tasks ---------- */
+
+.task-list {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-6);
+  padding: 0;
+  list-style: none;
+}
+
+.task-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.task-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.task-due {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.task-form {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 32rem;
+  margin-top: var(--s-6);
+}
+
+.field {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.field input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: #dc2626;
+}
+
+.task-form [role="alert"],
+.section > [role="alert"] {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.task-form button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 /* ---------- empty / error states ---------- */
 
 .state {
