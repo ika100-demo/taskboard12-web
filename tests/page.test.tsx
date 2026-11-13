@@ -1,38 +1,40 @@
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import HomePage from "@/app/page";
 
+beforeEach(() => {
+  process.env.TASKBOARD12_API_URL = "http://task-api.test";
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => new Response("[]", { status: 200, headers: { "content-type": "application/json" } })),
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  delete process.env.TASKBOARD12_API_URL;
+});
+
 describe("HomePage", () => {
-  it("renders the project heading", () => {
-    render(<HomePage />);
+  it("renders the project heading", async () => {
+    render(await HomePage());
     expect(screen.getByRole("heading", { level: 1, name: "taskboard12-web" })).toBeInTheDocument();
   });
 
-  it("offers the two primary actions", () => {
-    render(<HomePage />);
-    expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute("href", "#get-started");
+  it("links to the health check", async () => {
+    render(await HomePage());
     expect(screen.getByRole("link", { name: "Check health" })).toHaveAttribute("href", "/api/health");
   });
 
-  it("lists what is included as accessible cards", () => {
-    render(<HomePage />);
-    const features = screen.getByRole("region", { name: "What's included" });
-    const items = within(features).getAllByRole("listitem");
-    expect(items.length).toBeGreaterThanOrEqual(5);
-    expect(within(features).getByRole("heading", { level: 3, name: "Health and readiness" })).toBeInTheDocument();
-    expect(within(features).getByRole("heading", { level: 3, name: "Metrics and tracing" })).toBeInTheDocument();
+  it("renders the Tasks region", async () => {
+    render(await HomePage());
+    expect(within(screen.getByRole("region", { name: "Tasks" })).getByRole("form", { name: "New task" })).toBeInTheDocument();
   });
 
-  it("explains how to get started in order", () => {
-    render(<HomePage />);
-    const steps = within(screen.getByRole("region", { name: "Get started" })).getAllByRole("listitem");
-    expect(steps).toHaveLength(3);
-  });
-
-  it("keeps a single level-1 heading and ordered sections", () => {
-    render(<HomePage />);
+  it("keeps a single level-1 heading", async () => {
+    render(await HomePage());
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["What's included", "Get started"]);
+    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Tasks"]);
   });
 });
